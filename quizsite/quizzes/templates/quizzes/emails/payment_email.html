@@ -1,0 +1,36 @@
+{% extends 'quizzes/emails/base_email.html' %}
+
+{% block body %}
+    <div style="text-align: center; margin-bottom: 20px;">
+        <span style="font-size: 48px;">✅</span>
+    </div>
+    <h1 style="text-align: center;">Payment Successful!</h1>
+    
+    <p>Hi {{ user.first_name }},</p>
+    <p>Thank you for choosing Recgetup Music. We have successfully received your payment, and your subscription is now <strong>ACTIVE</strong>.</p>
+    
+    <table class="receipt-table" cellpadding="0" cellspacing="0">
+        <tr>
+            <td class="label">Plan Name</td>
+            <td class="value">{{ package_name }}</td>
+        </tr>
+        <tr>
+            <td class="label">Transaction ID</td>
+            <td class="value" style="font-family: monospace; letter-spacing: 1px;">{{ transaction_id }}</td>
+        </tr>
+        <tr>
+            <td class="label">Payment Date</td>
+            <td class="value">{% now "jS F Y" %}</td>
+        </tr>
+        <tr>
+            <td class="label">Amount Paid</td>
+            <td class="value highlight-value">₹{{ amount }}</td>
+        </tr>
+    </table>
+
+    <div class="btn-container">
+        <a href="http://{{ domain }}{% url 'home' %}" class="btn">Go to Dashboard</a>
+    </div>
+
+    <p style="font-size: 13px; text-align: center;">You have instant access to all class recordings and live sessions included in this plan.</p>
+{% endblock %}

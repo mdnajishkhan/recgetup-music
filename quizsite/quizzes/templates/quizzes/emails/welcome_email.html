@@ -1,0 +1,19 @@
+{% extends 'quizzes/emails/base_email.html' %}
+
+{% block body %}
+    <h1>Welcome to the Family! 🌟</h1>
+    <p>Hi {{ user.first_name }},</p>
+    
+    <p>We are absolutely thrilled to have you join Recgetup Music. You have just taken the first step towards mastering your vocals.</p>
+    
+    <p>At Recgetup Music, we provide world-class singing lessons, real-time feedback, and a community of passionate singers just like you.</p>
+
+    <div class="btn-container">
+        <a href="http://{{ domain }}{% url 'packages' %}" class="btn">Start Your Journey</a>
+    </div>
+
+    <p><strong>What's Next?</strong></p>
+    <p>Check out our membership packages to unlock live classes and premium resources.</p>
+    
+    <p>Happy Singing,<br>Md Najish Khan</p>
+{% endblock %}

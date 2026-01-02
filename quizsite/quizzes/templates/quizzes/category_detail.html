@@ -1,0 +1,190 @@
+{% extends 'quizzes/base.html' %}
+{% load static %}
+
+{% block content %}
+
+<!-- HERO SECTION -->
+<div class="relative h-[70vh] w-full overflow-hidden flex items-center justify-center">
+    <!-- Background Image with Overlay -->
+    <div class="absolute inset-0 z-0">
+        <img src="{% static image %}" alt="{{ title }}" class="w-full h-full object-cover opacity-60 scale-105 animate-pulse-slow">
+        <div class="absolute inset-0 bg-gradient-to-t from-[#0d1117] via-[#0d1117]/80 to-transparent"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-[#0d1117] via-transparent to-[#0d1117]"></div>
+    </div>
+
+    <!-- Hero Content -->
+    <div class="relative z-10 text-center px-6 max-w-5xl mx-auto mt-20">
+        <div class="mb-4 animate-fade-in-down inline-block p-4 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+            <span class="text-4xl filter drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">{{ icon }}</span>
+        </div>
+        
+        <h1 class="text-6xl md:text-8xl font-black text-white mb-6 leading-tight tracking-tighter animate-fade-in-up">
+            {% if color == 'amber' %}
+                <span class="bg-gradient-to-r from-amber-200 via-amber-500 to-orange-500 text-transparent bg-clip-text">{{ title }}</span>
+            {% elif color == 'purple' %}
+                <span class="bg-gradient-to-r from-purple-200 via-purple-500 to-indigo-500 text-transparent bg-clip-text">{{ title }}</span>
+            {% else %}
+                <span class="bg-gradient-to-r from-red-200 via-red-500 to-pink-500 text-transparent bg-clip-text">{{ title }}</span>
+            {% endif %}
+        </h1>
+        
+        <p class="text-xl md:text-3xl text-gray-300 font-light max-w-3xl mx-auto mb-10 animate-fade-in-up delay-100">
+            {{ subtitle }}
+        </p>
+
+        <a href="#curriculum" class="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-white text-black font-bold text-lg hover:scale-105 transition shadow-[0_0_20px_rgba(255,255,255,0.3)] animate-fade-in-up delay-200">
+            Start Learning Now <i class="fa-solid fa-arrow-down"></i>
+        </a>
+    </div>
+</div>
+
+<!-- INFO & CURRICULUM GRID -->
+<div id="curriculum" class="relative py-24 px-6 max-w-7xl mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+        
+        <!-- Left: Description -->
+        <div class="reveal-on-scroll">
+            <h2 class="text-4xl font-black text-white mb-8 border-l-4 pl-6
+                {% if color == 'amber' %}border-amber-500{% elif color == 'purple' %}border-purple-500{% else %}border-red-500{% endif %}">
+                About The Craft
+            </h2>
+            <p class="text-gray-400 text-lg leading-relaxed mb-8">
+                {{ description }}
+            </p>
+            
+            <div class="p-8 rounded-3xl bg-white/5 border border-white/10 relative overflow-hidden group hover:border-white/20 transition">
+                <i class="fa-solid fa-quote-left text-5xl absolute top-4 left-4 opacity-10"></i>
+                <blockquote class="text-xl md:text-2xl font-serif text-gray-200 italic relative z-10 text-center">
+                    "{{ quote }}"
+                </blockquote>
+                <div class="mt-6 text-center text-sm font-bold uppercase tracking-widest text-gray-500">
+                    — {{ mentor }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Curriculum -->
+        <div class="space-y-6 reveal-on-scroll delay-100">
+            <h2 class="text-4xl font-black text-white mb-8">What You'll Learn</h2>
+            
+            {% for item in curriculum %}
+            <div class="p-6 rounded-2xl bg-[#161b22] border border-white/10 hover:bg-white/5 transition flex gap-6 items-center group
+                {% if color == 'amber' %}hover:border-amber-500/50{% elif color == 'purple' %}hover:border-purple-500/50{% else %}hover:border-red-500/50{% endif %}">
+                
+                <div class="w-12 h-12 rounded-full flex items-center justify-center shrink-0 font-bold text-xl transition-all duration-300 group-hover:scale-110
+                    {% if color == 'amber' %}bg-amber-500/20 text-amber-500{% elif color == 'purple' %}bg-purple-500/20 text-purple-500{% else %}bg-red-500/20 text-red-500{% endif %}">
+                    {{ forloop.counter }}
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-1 group-hover:text-white transition">{{ item.title }}</h3>
+                    <p class="text-sm text-gray-400">{{ item.desc }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- MENTOR BANNER -->
+<div class="py-20 bg-white/5 border-y border-white/5 relative overflow-hidden">
+    <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+    <div class="max-w-7xl mx-auto px-6 text-center relative z-10">
+        <h2 class="text-4xl md:text-5xl font-black text-white mb-6">Mastered by Legends</h2>
+        <p class="text-gray-400 max-w-2xl mx-auto mb-10">
+            Our curriculum is designed by award-winning artists who have performed on the biggest stages.
+        </p>
+        <div class="flex justify-center gap-4">
+             <div class="w-16 h-16 rounded-full bg-gray-700 overflow-hidden border-2 border-white/20">
+                <img src="https://ui-avatars.com/api/?name=Najish&background=random" class="w-full h-full object-cover">
+             </div>
+             <div class="w-16 h-16 rounded-full bg-gray-700 overflow-hidden border-2 border-white/20">
+                <img src="https://ui-avatars.com/api/?name=Arijit&background=random" class="w-full h-full object-cover">
+             </div>
+             <div class="w-16 h-16 rounded-full bg-gray-700 overflow-hidden border-2 border-white/20">
+                <img src="https://ui-avatars.com/api/?name=Sonu&background=random" class="w-full h-full object-cover">
+             </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA SECTION -->
+<div class="py-24 text-center">
+    <div class="max-w-4xl mx-auto px-6">
+        <h2 class="text-5xl md:text-7xl font-black text-white mb-8">Ready to <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">Begin?</span></h2>
+        
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <a href="{% url 'register' %}" class="px-12 py-5 rounded-full font-black text-xl hover:scale-105 transition shadow-2xl
+                {% if color == 'amber' %}bg-amber-500 text-black shadow-amber-500/20{% elif color == 'purple' %}bg-purple-600 text-white shadow-purple-600/20{% else %}bg-red-600 text-white shadow-red-600/20{% endif %}">
+                Join Class for Free 🚀
+            </a>
+            <a href="{% url 'packages' %}" class="px-12 py-5 rounded-full bg-white/10 border border-white/10 text-white font-bold text-xl hover:bg-white/20 transition backdrop-blur-md">
+                View Pricing
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- ANIMATION STYLES (Injected for this page specifically if needed, but base has some) -->
+<style>
+    .animate-pulse-slow {
+        animation: pulseScale 8s ease-in-out infinite;
+    }
+    @keyframes pulseScale {
+        0%, 100% { transform: scale(1.05); opacity: 0.6; }
+        50% { transform: scale(1.1); opacity: 0.4; }
+    }
+</style>
+
+<!-- FLOATING STICKY CTA -->
+<div id="sticky-cta" class="fixed bottom-6 left-0 right-0 mx-auto px-4 w-full max-w-lg transform translate-y-[150%] transition-transform duration-500 z-50">
+    <div class="bg-gray-900/90 backdrop-blur-xl border border-white/20 rounded-full p-2 pl-6 flex items-center justify-between shadow-2xl shadow-black/50">
+        <div class="flex items-center gap-3">
+            <span class="text-2xl animate-bounce">{{ icon }}</span>
+            <div>
+                <h4 class="font-bold text-white text-sm leading-tight">Join {{ title }}</h4>
+                <p class="text-[10px] text-gray-400 uppercase tracking-wide">Limited Slots Available</p>
+            </div>
+        </div>
+        <a href="{% url 'register' %}" class="px-6 py-3 rounded-full font-bold text-sm hover:scale-105 transition shadow-lg
+            {% if color == 'amber' %}bg-amber-500 text-black shadow-amber-500/20{% elif color == 'purple' %}bg-purple-600 text-white shadow-purple-600/20{% else %}bg-red-600 text-white shadow-red-600/20{% endif %}">
+            Enroll Now 🚀
+        </a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // 1. Reveal Animation Observer
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    entry.target.classList.remove('opacity-0', 'translate-y-10'); 
+                }
+            });
+        });
+        
+        document.querySelectorAll('.reveal-on-scroll').forEach(el => {
+            el.classList.add('transition-all', 'duration-1000', 'opacity-0', 'translate-y-10'); 
+            observer.observe(el);
+        });
+
+        // 2. Sticky CTA Scroll Logic
+        const stickyCta = document.getElementById('sticky-cta');
+        window.addEventListener('scroll', () => {
+            const scrollValues = window.scrollY;
+            const heroHeight = window.innerHeight * 0.5; // Show after 50% scroll
+            
+            if (scrollValues > heroHeight) {
+                stickyCta.classList.remove('translate-y-[150%]');
+                stickyCta.classList.add('translate-y-0');
+            } else {
+                stickyCta.classList.add('translate-y-[150%]');
+                stickyCta.classList.remove('translate-y-0');
+            }
+        });
+    });
+</script>
+
+{% endblock %}

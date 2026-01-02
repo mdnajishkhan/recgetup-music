@@ -1,0 +1,57 @@
+{% extends 'quizzes/base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h2 class="text-3xl font-black text-white mb-8 flex items-center gap-3">
+        <span class="text-4xl">📜</span> Payment History
+    </h2>
+
+    <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-white/5 text-gray-400 text-xs uppercase tracking-wider">
+                        <th class="p-6 font-semibold">Date</th>
+                        <th class="p-6 font-semibold">Transaction ID</th>
+                        <th class="p-6 font-semibold">Package</th>
+                        <th class="p-6 font-semibold">Amount</th>
+                        <th class="p-6 font-semibold">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5 text-sm">
+                    {% for txn in history %}
+                    <tr class="hover:bg-white/5 transition">
+                        <td class="p-6 text-white">{{ txn.payment_date|date:"M d, Y" }}</td>
+                        <td class="p-6 text-gray-400 font-mono">{{ txn.transaction_id }}</td>
+                        <td class="p-6 text-white font-medium">{{ txn.package.name|default:"-" }}</td>
+                        <td class="p-6 text-white font-bold">₹{{ txn.amount|intcomma }}</td>
+                        <td class="p-6">
+                            {% if txn.status == 'SUCCESS' %}
+                                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-xs font-bold border border-green-500/30">
+                                    <i class="fa-solid fa-check-circle"></i> Success
+                                </span>
+                            {% elif txn.status == 'FAILED' %}
+                                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-500/20 text-red-400 text-xs font-bold border border-red-500/30">
+                                    <i class="fa-solid fa-circle-xmark"></i> Failed
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 text-xs font-bold border border-yellow-500/30">
+                                    <i class="fa-solid fa-clock"></i> Pending
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="p-12 text-center text-gray-500">
+                            No payment history found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

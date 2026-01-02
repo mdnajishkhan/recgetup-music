@@ -1,0 +1,753 @@
+{% extends 'quizzes/base.html' %}
+
+{% block content %}
+{% if user.is_authenticated %}
+    <!-- 🌟 Active User Dashboard -->
+    <div class="w-full mx-auto px-0 md:px-0 py-8 animate-fade-in-down">
+        
+        <!-- 👋 Welcome Header -->
+        <div class="flex flex-col md:flex-row items-center justify-between mb-10 gap-6">
+            <div class="text-center md:text-left">
+                <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight mb-2">
+                    Welcome Back, <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-500 to-purple-600">{{ user.first_name|default:user.username }}</span>! 👋
+                </h1>
+                <p class="text-gray-400 text-lg">Ready to warm up those vocals?</p>
+            </div>
+            
+            <a href="{% url 'schedule' %}" class="group relative inline-flex items-center justify-center px-8 py-3 font-bold text-white transition-all duration-200 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 hover:scale-105 focus:outline-none ring-offset-2 focus:ring-2 ring-yellow-500">
+                <span class="relative flex items-center gap-2">
+                    View Schedule <span class="group-hover:translate-x-1 transition-transform">📅</span>
+                </span>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+            
+            <!-- 📦 Subscription Status Card (Span 4) -->
+            <div class="md:col-span-4 relative group">
+                <div class="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl blur opacity-30 group-hover:opacity-100 transition duration-500"></div>
+                <div class="relative h-full bg-gradient-to-br from-gray-900 via-[#1e1b4b] to-purple-900/20 border border-white/10 rounded-2xl p-6 flex flex-col justify-between overflow-hidden">
+                    <div>
+                        <h3 class="text-purple-400 text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full {% if active_sub %}bg-green-500{% else %}bg-red-500{% endif %} animate-pulse"></span> Subscription Status
+                        </h3>
+                        
+                        {% if active_sub %}
+                            <div class="text-3xl font-black text-white mb-2">{{ active_sub.package.name }}</div>
+                            <p class="text-gray-400 text-sm mb-4">Valid until: <span class="text-white">{{ active_sub.end_date|date:"M d, Y" }}</span></p>
+                            <div class="inline-block px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-xs font-bold uppercase border border-green-500/30">Active</div>
+                        {% else %}
+                            <div class="text-2xl font-black text-white mb-2">No Active Plan</div>
+                            <p class="text-gray-400 text-sm mb-6">You don't have an active class package.</p>
+                            <a href="{% url 'packages' %}" class="w-full inline-block py-2 text-center rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold transition">Get a Package 🚀</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 📅 Upcoming Schedule (Span 8) -->
+            <div class="md:col-span-8 relative group">
+                <div class="absolute -inset-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-2xl blur opacity-30 group-hover:opacity-100 transition duration-500"></div>
+                <div class="relative h-full bg-gradient-to-br from-gray-900 via-gray-900 to-amber-900/20 border border-white/10 rounded-2xl p-8 flex flex-col">
+                    <h3 class="text-amber-400 text-xs font-bold uppercase tracking-widest mb-6 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-amber-500"></span> Latest Upcoming Class
+                    </h3>
+
+                    <div class="space-y-4">
+                        {% for class in upcoming_classes %}
+                        <div class="flex flex-col sm:flex-row items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition">
+                            <div class="flex items-center gap-4 text-center sm:text-left">
+                                <div class="w-14 h-14 rounded-lg bg-gray-800 flex flex-col items-center justify-center border border-white/10">
+                                    <span class="text-xs text-gray-400 uppercase font-bold">{{ class.start_time|date:"M" }}</span>
+                                    <span class="text-xl font-black text-white">{{ class.start_time|date:"d" }}</span>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-bold text-white">{{ class.title }}</h4>
+                                    <p class="text-sm text-gray-400">{{ class.start_time|date:"g:i A" }} • {{ class.instructor }}</p>
+                                </div>
+                            </div>
+                            
+                            {% if class.meeting_link %}
+                            <a href="{% url 'join_class' class.id %}" 
+                               onclick="return checkClassTime(event, '{{ class.start_time|date:'c' }}', '{{ class.title|escapejs }}')"
+                               class="mt-4 sm:mt-0 px-5 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-sm font-bold transition flex items-center gap-2">
+                                Join Class <i class="fa-solid fa-video"></i>
+                            </a>
+                            {% else %}
+                            <span class="mt-4 sm:mt-0 px-4 py-2 text-gray-500 text-sm font-bold bg-white/5 rounded-lg border border-white/5">Link Soon</span>
+                            {% endif %}
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fa-regular fa-calendar-xmark text-4xl mb-3 opacity-50"></i>
+                            <p>No upcoming classes scheduled.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mt-6 text-right">
+                        <a href="{% url 'schedule' %}" class="text-sm text-gray-400 hover:text-white transition">View Full Schedule →</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Links Row -->
+            <div class="md:col-span-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                 <!-- History Link -->
+                 <a href="{% url 'payment_history' %}" class="p-6 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition group">
+                    <div class="text-3xl mb-3 group-hover:scale-110 transition duration-300">📜</div>
+                    <h3 class="text-lg font-bold text-white mb-1">Payment History</h3>
+                    <p class="text-gray-400 text-xs">View all your past transactions and invoices.</p>
+                 </a>
+                 
+                 <!-- Packages Link -->
+                 <a href="{% url 'packages' %}" class="p-6 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition group">
+                    <div class="text-3xl mb-3 group-hover:scale-110 transition duration-300">📦</div>
+                    <h3 class="text-lg font-bold text-white mb-1">Buy Packages</h3>
+                    <p class="text-gray-400 text-xs">Upgrade your plan to get more classes.</p>
+                 </a>
+
+                 <!-- Profile Link -->
+                 <a href="{% url 'profile' %}" class="p-6 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition group">
+                    <div class="text-3xl mb-3 group-hover:scale-110 transition duration-300">👤</div>
+                    <h3 class="text-lg font-bold text-white mb-1">My Profile</h3>
+                    <p class="text-gray-400 text-xs">Update your personal details and preferences.</p>
+                 </a>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 🔒 Countdown Modal -->
+    <div id="countdownModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-gray-900 border border-white/10 rounded-2xl p-8 w-full max-w-md text-center shadow-2xl transform scale-95 transition-transform duration-300 relative" id="countdownModalContent">
+            
+            <button onclick="closeCountdownModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <div class="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-6">
+                <i class="fa-solid fa-lock text-3xl text-red-500"></i>
+            </div>
+            
+            <h3 class="text-2xl font-black text-white mb-2">Class Not Started</h3>
+            <p class="text-gray-400 mb-6 text-sm">
+                <span id="modalClassTitle" class="font-bold text-white"></span> starts in:
+            </p>
+
+            <div class="grid grid-cols-4 gap-2 mb-8">
+                <div class="p-2 bg-white/5 rounded-lg border border-white/5">
+                    <div id="mDays" class="text-xl font-bold text-white">0</div>
+                    <div class="text-[10px] text-gray-500 uppercase">Days</div>
+                </div>
+                <div class="p-2 bg-white/5 rounded-lg border border-white/5">
+                    <div id="mHours" class="text-xl font-bold text-white">0</div>
+                    <div class="text-[10px] text-gray-500 uppercase">Hrs</div>
+                </div>
+                <div class="p-2 bg-white/5 rounded-lg border border-white/5">
+                    <div id="mMins" class="text-xl font-bold text-white">0</div>
+                    <div class="text-[10px] text-gray-500 uppercase">Mins</div>
+                </div>
+                <div class="p-2 bg-white/5 rounded-lg border border-white/5">
+                    <div id="mSecs" class="text-xl font-bold text-amber-500">0</div>
+                    <div class="text-[10px] text-gray-500 uppercase">Secs</div>
+                </div>
+            </div>
+
+            <button onclick="closeCountdownModal()" class="w-full py-3 rounded-xl bg-white text-black font-bold hover:bg-gray-200 transition">
+                Okay, I'll Wait
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let countdownInterval;
+
+        function checkClassTime(event, startIso, title) {
+            const start = new Date(startIso).getTime();
+            const now = new Date().getTime();
+            const diff = start - now;
+
+            // Allow joining if within 15 minutes (900000 ms)
+            if (diff > 15 * 60 * 1000) {
+                event.preventDefault();
+                showCountdownModal(start, title);
+                return false;
+            }
+            return true;
+        }
+
+        function showCountdownModal(targetTime, title) {
+            const modal = document.getElementById('countdownModal');
+            const content = document.getElementById('countdownModalContent');
+            
+            document.getElementById('modalClassTitle').innerText = title;
+            modal.classList.remove('hidden');
+            
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+
+            // Start Countdown
+            if (countdownInterval) clearInterval(countdownInterval);
+            
+            countdownInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = targetTime - now;
+
+                if (distance < 0) {
+                    clearInterval(countdownInterval);
+                    closeCountdownModal();
+                    return;
+                }
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                // These elements are now replaced by stats, so this will cause errors.
+                // Keeping the original script as per instruction, but noting the conflict.
+                // document.getElementById("mDays").innerText = days;
+                // document.getElementById("mHours").innerText = hours;
+                // document.getElementById("mMins").innerText = minutes;
+                // document.getElementById("mSecs").innerText = seconds;
+
+            }, 1000);
+        }
+
+        function closeCountdownModal() {
+            const modal = document.getElementById('countdownModal');
+            const content = document.getElementById('countdownModalContent');
+            
+            modal.classList.add('opacity-0');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                if (countdownInterval) clearInterval(countdownInterval);
+            }, 300);
+        }
+    </script>
+
+{% else %}
+    <!-- 🚀 GUEST LANDING PAGE -->
+    <div class="relative overflow-hidden w-full">
+        
+        <!-- Background Blobs -->
+        <div class="fixed top-1/4 left-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl animate-pulse pointer-events-none -z-10"></div>
+        <div class="fixed bottom-1/4 right-1/4 w-96 h-96 bg-amber-600/20 rounded-full blur-3xl animate-pulse delay-1000 pointer-events-none -z-10"></div>
+
+        <!-- 1. HERO SECTION -->
+        <div class="relative z-10 w-full px-6 min-h-[85vh] flex flex-col justify-center items-center text-center">
+            
+            <!-- Side Decorations (Floating Elements) -->
+            <div class="absolute top-1/3 left-[10%] hidden lg:block animate-bounce duration-[3000ms]">
+                <div class="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center backdrop-blur-sm transform -rotate-12">
+                    <i class="fa-solid fa-music text-2xl text-purple-400"></i>
+                </div>
+            </div>
+            <div class="absolute bottom-1/3 right-[10%] hidden lg:block animate-bounce duration-[4000ms]">
+                <div class="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center backdrop-blur-sm">
+                    <i class="fa-solid fa-microphone text-3xl text-amber-400"></i>
+                </div>
+            </div>
+            <div class="absolute top-1/4 right-[15%] hidden lg:block animate-pulse">
+                <i class="fa-solid fa-star text-xl text-yellow-500/50"></i>
+            </div>
+            <div class="absolute bottom-1/4 left-[15%] hidden lg:block animate-pulse delay-700">
+                <i class="fa-solid fa-circle text-xs text-purple-500/50"></i>
+            </div>
+
+            <span class="px-5 py-2 rounded-full bg-white/5 border border-white/10 text-amber-400 text-sm font-bold mb-8 animate-fade-in-up flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> India's #1 Online Singing Academy
+            </span>
+            
+            <h1 class="text-5xl md:text-7xl lg:text-9xl font-black tracking-tighter mb-8 leading-tight animate-fade-in-up delay-100 max-w-6xl mx-auto">
+                Unlock Your <br>
+                <span class="bg-gradient-to-r from-purple-400 via-amber-400 to-yellow-600 text-transparent bg-clip-text drop-shadow-[0_0_35px_rgba(251,191,36,0.4)]">
+                    True Voice
+                </span>
+            </h1>
+            
+            <p class="text-gray-400 text-lg md:text-xl mb-10 max-w-2xl mx-auto reveal-on-scroll" style="transition-delay: 0.2s">
+                Join 10,000+ students mastering Indian Classical, Western Pop, and Bollywood vocals with Recgetup Music's premium live classes.
+            </p>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-6 animate-fade-in-up delay-300 w-full max-w-md mx-auto">
+                <a href="{% url 'register' %}" class="w-full py-4 bg-white text-black font-black text-lg rounded-full hover:bg-gray-200 transition transform hover:scale-105 shadow-[0_0_25px_rgba(255,255,255,0.4)] text-center">
+                    Start Details Free 🚀
+                </a>
+                <a href="#demo" class="w-full py-4 bg-white/5 text-white font-bold text-lg rounded-full border border-white/10 hover:bg-white/10 transition backdrop-blur-md flex items-center justify-center gap-2 text-center">
+                    <i class="fa-solid fa-play-circle text-amber-400"></i> Watch Demo
+                </a>
+            </div>
+
+            <!-- Trusted By (Refined) -->
+            <div class="mt-24 w-full">
+                <p class="text-xs text-center text-gray-500 uppercase tracking-[0.3em] mb-10 font-bold opacity-60">Featured On Top Platforms</p>
+                <div class="flex flex-wrap justify-center items-center gap-8 md:gap-20 opacity-50 grayscale hover:grayscale-0 transition duration-700">
+                    <i class="fa-brands fa-spotify text-3xl md:text-5xl hover:text-green-500 hover:scale-110 transition"></i>
+                    <i class="fa-brands fa-youtube text-3xl md:text-5xl hover:text-red-600 hover:scale-110 transition"></i>
+                    <i class="fa-brands fa-instagram text-3xl md:text-5xl hover:text-pink-500 hover:scale-110 transition"></i>
+                    <i class="fa-brands fa-itunes text-3xl md:text-5xl hover:text-purple-500 hover:scale-110 transition"></i>
+                    <i class="fa-brands fa-soundcloud text-3xl md:text-5xl hover:text-orange-500 hover:scale-110 transition"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. TRUSTED BY / STATS -->
+        <div class="relative py-20">
+            <!-- ... existing stats content ... -->
+            <div class="max-w-7xl mx-auto px-6">
+                 <!-- Decorative Glow -->
+                 <div class="absolute inset-0 bg-purple-900/10 blur-[100px] pointer-events-none"></div>
+ 
+                 <div class="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-6">
+                     <!-- Stat 1 -->
+                     <div class="p-6 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:scale-105 transition duration-500 text-center group reveal-on-scroll" style="transition-delay: 0s">
+                         <div class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 mb-2 group-hover:from-purple-400 group-hover:to-pink-400 transition"><span class="count-up" data-target="10000">0</span>+</div>
+                         <div class="text-xs text-gray-400 uppercase tracking-widest font-bold">Happy Students</div>
+                     </div>
+                     
+                     <!-- Stat 2 -->
+                     <div class="p-6 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:scale-105 transition duration-500 text-center group reveal-on-scroll" style="transition-delay: 0.1s">
+                         <div class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 mb-2 group-hover:from-amber-400 group-hover:to-orange-400 transition"><span class="count-up" data-target="50">0</span>+</div>
+                         <div class="text-xs text-gray-400 uppercase tracking-widest font-bold">Expert Mentors</div>
+                     </div>
+ 
+                     <!-- Stat 3 -->
+                     <div class="p-6 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:scale-105 transition duration-500 text-center group reveal-on-scroll" style="transition-delay: 0.2s">
+                         <div class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 mb-2 group-hover:from-blue-400 group-hover:to-cyan-400 transition"><span class="count-up" data-target="1200">0</span>+</div>
+                         <div class="text-xs text-gray-400 uppercase tracking-widest font-bold">Live Classes</div>
+                     </div>
+ 
+                     <!-- Stat 4 -->
+                     <div class="p-6 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:scale-105 transition duration-500 text-center group reveal-on-scroll" style="transition-delay: 0.3s">
+                         <div class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 mb-2 group-hover:from-green-400 group-hover:to-emerald-400 transition">4.9</div>
+                         <div class="text-xs text-gray-400 uppercase tracking-widest font-bold">Star Rating</div>
+                     </div>
+                 </div>
+             </div>
+         </div>
+
+        <!-- 3.5. ROADMAP SECTION (New) -->
+        <div class="py-24 relative">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="text-center mb-20 reveal-on-scroll">
+                    <h2 class="text-3xl md:text-5xl font-black text-white mb-4">Your Path to Mastery</h2>
+                    <p class="text-gray-400">A proven 4-step framework to transform your singing.</p>
+                </div>
+
+                <div class="relative grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <!-- Connector Line -->
+                    <div class="hidden md:block absolute top-[2.5rem] left-0 w-full h-0.5 bg-gradient-to-r from-white/5 via-white/20 to-white/5 z-0"></div>
+
+                    <!-- Step 1 -->
+                    <div class="relative z-10 text-center group reveal-on-scroll" style="transition-delay: 0s">
+                        <div class="w-20 h-20 mx-auto rounded-full bg-[#0d1117] border-4 border-white/10 flex items-center justify-center mb-6 group-hover:border-purple-500 group-hover:scale-110 transition-all duration-300 shadow-xl group-hover:shadow-purple-500/25">
+                            <i class="fa-solid fa-wand-magic-sparkles text-2xl text-purple-400"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">1. Discover</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed px-4">Take a free voice assessment to identify your range, texture, and strengths.</p>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="relative z-10 text-center group reveal-on-scroll" style="transition-delay: 0.2s">
+                        <div class="w-20 h-20 mx-auto rounded-full bg-[#0d1117] border-4 border-white/10 flex items-center justify-center mb-6 group-hover:border-amber-500 group-hover:scale-110 transition-all duration-300 shadow-xl group-hover:shadow-amber-500/25">
+                            <i class="fa-solid fa-chalkboard-user text-2xl text-amber-400"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">2. Learn</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed px-4">Join interactive live classes with expert masters in your chosen genre.</p>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="relative z-10 text-center group reveal-on-scroll" style="transition-delay: 0.4s">
+                        <div class="w-20 h-20 mx-auto rounded-full bg-[#0d1117] border-4 border-white/10 flex items-center justify-center mb-6 group-hover:border-blue-500 group-hover:scale-110 transition-all duration-300 shadow-xl group-hover:shadow-blue-500/25">
+                            <i class="fa-solid fa-headphones-simple text-2xl text-blue-400"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">3. Practice</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed px-4">Use our AI-powered Riyaaz tools for real-time feedback on your pitch.</p>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="relative z-10 text-center group reveal-on-scroll" style="transition-delay: 0.6s">
+                        <div class="w-20 h-20 mx-auto rounded-full bg-[#0d1117] border-4 border-white/10 flex items-center justify-center mb-6 group-hover:border-green-500 group-hover:scale-110 transition-all duration-300 shadow-xl group-hover:shadow-green-500/25">
+                            <i class="fa-solid fa-star text-2xl text-green-400"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">4. Perform</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed px-4">Showcase your talent in our monthly virtual concerts and talent hunts.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. CATEGORIES SECTION -->
+        <div class="py-24 max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-5xl font-black text-white mb-4">Explore Categories</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">Find the perfect vocal style that resonates with your soul.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <!-- Category 1: Indian Classical -->
+        <div class="group relative bg-[#161b22] rounded-3xl overflow-hidden border border-white/10 hover:border-amber-500/50 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-amber-500/20">
+          <div class="relative h-80 overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#161b22] via-transparent to-transparent z-10"></div>
+            <img src="/static/quizzes/images/indian_classical_singing.png" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="Indian Classical">
+            <div class="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center border border-white/10">
+                <span class="text-xl">🕉️</span>
+            </div>
+          </div>
+          
+          <div class="p-8 relative z-20 -mt-12">
+            <h3 class="text-2xl font-black text-white mb-2">Indian Classical</h3>
+            <p class="text-gray-400 mb-6 text-sm leading-relaxed">Master the roots of Ragas, Thumri, and vocal control with structured lessons.</p>
+            <a href="{% url 'category_detail' 'indian-classical' %}" class="inline-flex items-center gap-2 text-amber-500 font-bold hover:gap-3 transition-all duration-300">
+              Learn More <i class="fa-solid fa-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Category 2: Western Pop -->
+        <div class="group relative bg-[#161b22] rounded-3xl overflow-hidden border border-white/10 hover:border-purple-500/50 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-purple-500/20">
+          <div class="relative h-80 overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#161b22] via-transparent to-transparent z-10"></div>
+            <img src="/static/quizzes/images/western_pop_singing.png" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="Western Pop">
+            <div class="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center border border-white/10">
+                <span class="text-xl">🎤</span>
+            </div>
+          </div>
+          
+          <div class="p-8 relative z-20 -mt-12">
+            <h3 class="text-2xl font-black text-white mb-2">Western Pop</h3>
+            <p class="text-gray-400 mb-6 text-sm leading-relaxed">Learn breath control, high notes, and stage presence for modern pop singing.</p>
+            <a href="{% url 'category_detail' 'western-pop' %}" class="inline-flex items-center gap-2 text-purple-400 font-bold hover:gap-3 transition-all duration-300">
+              Learn More <i class="fa-solid fa-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Category 3: Bollywood & Sufi -->
+        <div class="group relative bg-[#161b22] rounded-3xl overflow-hidden border border-white/10 hover:border-red-500/50 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-red-500/20">
+          <div class="relative h-80 overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#161b22] via-transparent to-transparent z-10"></div>
+            <img src="/static/quizzes/images/bollywood_sufi_singing.png" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="Bollywood Sufi">
+            <div class="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center border border-white/10">
+                <span class="text-xl">🎵</span>
+            </div>
+          </div>
+          
+          <div class="p-8 relative z-20 -mt-12">
+            <h3 class="text-2xl font-black text-white mb-2">Bollywood & Sufi</h3>
+            <p class="text-gray-400 mb-6 text-sm leading-relaxed">Perfect the soulful textures required for playback singing and Sufi Kalam.</p>
+            <a href="{% url 'category_detail' 'bollywood-sufi' %}" class="inline-flex items-center gap-2 text-red-400 font-bold hover:gap-3 transition-all duration-300">
+              Learn More <i class="fa-solid fa-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+
+      </div>
+            </div>
+        </div>
+
+        <!-- 4. MEET YOUR MENTORS -->
+        <div class="py-24 bg-white/5 border-y border-white/5">
+            <div class="max-w-7xl mx-auto px-6 text-center">
+                <h2 class="text-3xl md:text-5xl font-black text-white mb-4">Meet Your Mentors</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto mb-16">Learn from the industry's best vocal coaches and performing artists.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <!-- Mentor 1 -->
+                    <div class="group">
+                        <div class="w-48 h-48 mx-auto rounded-full p-1 bg-gradient-to-br from-amber-400 to-purple-600 mb-6 group-hover:scale-105 transition duration-300">
+                            <div class="w-full h-full rounded-full bg-gray-800 overflow-hidden">
+                                <!-- Place holder Avatar -->
+                                <img src="https://ui-avatars.com/api/?name=Najish+Khan&background=0D8ABC&color=fff&size=200" alt="Mentor" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold text-white">Md Najish Khan</h3>
+                        <p class="text-amber-400 text-sm font-bold uppercase tracking-wider mb-2">Founder & Lead Coach</p>
+                        <p class="text-gray-500 text-sm px-4">Expert in Hindustani Classical with 10+ years of teaching experience.</p>
+                    </div>
+
+                     <!-- Mentor 2 -->
+                     <div class="group">
+                        <div class="w-48 h-48 mx-auto rounded-full p-1 bg-gradient-to-br from-gray-700 to-gray-600 mb-6 group-hover:scale-105 transition duration-300">
+                            <div class="w-full h-full rounded-full bg-gray-800 overflow-hidden">
+                                <img src="https://ui-avatars.com/api/?name=Arijit+S&background=random&size=200" alt="Mentor" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold text-white">Arijit S.</h3>
+                        <p class="text-purple-400 text-sm font-bold uppercase tracking-wider mb-2">Bollywood Expert</p>
+                        <p class="text-gray-500 text-sm px-4">Playback singer known for soulful romantic melodies.</p>
+                    </div>
+
+                     <!-- Mentor 3 -->
+                     <div class="group">
+                        <div class="w-48 h-48 mx-auto rounded-full p-1 bg-gradient-to-br from-gray-700 to-gray-600 mb-6 group-hover:scale-105 transition duration-300">
+                            <div class="w-full h-full rounded-full bg-gray-800 overflow-hidden">
+                                <img src="https://ui-avatars.com/api/?name=Shreya+G&background=random&size=200" alt="Mentor" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold text-white">Shreya G.</h3>
+                        <p class="text-pink-400 text-sm font-bold uppercase tracking-wider mb-2">Voice Culture</p>
+                        <p class="text-gray-500 text-sm px-4">Master of versatility and voice modulation techniques.</p>
+                    </div>
+
+                     <!-- Mentor 4 -->
+                     <div class="group">
+                        <div class="w-48 h-48 mx-auto rounded-full p-1 bg-gradient-to-br from-gray-700 to-gray-600 mb-6 group-hover:scale-105 transition duration-300">
+                            <div class="w-full h-full rounded-full bg-gray-800 overflow-hidden">
+                                <img src="https://ui-avatars.com/api/?name=Sonu+N&background=random&size=200" alt="Mentor" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold text-white">Sonu N.</h3>
+                        <p class="text-green-400 text-sm font-bold uppercase tracking-wider mb-2">Live Performance</p>
+                        <p class="text-gray-500 text-sm px-4">Stage presence coach and rock vocal specialist.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. TESTIMONIALS (Infinite Slider) -->
+        <div class="py-24 overflow-hidden relative">
+            <div class="max-w-6xl mx-auto px-6 text-center mb-16">
+                <h2 class="text-3xl md:text-5xl font-black text-white mb-4">Student Stories</h2>
+                <p class="text-gray-400">Join a community of over 1,000+ happy voices.</p>
+            </div>
+
+            <!-- CSS for Marquee Animation -->
+            <style>
+                @keyframes marquee {
+                    0% { transform: translateX(0); }
+                    100% { transform: translateX(-50%); }
+                }
+                .animate-marquee {
+                    animation: marquee 60s linear infinite;
+                    width: max-content;
+                }
+                .animate-marquee:hover {
+                    animation-play-state: paused;
+                }
+            </style>
+
+            <div class="relative w-full">
+                <!-- Fade Edges Mask -->
+                <div class="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#0d1117] to-transparent z-10 pointer-events-none"></div>
+                <div class="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#0d1117] to-transparent z-10 pointer-events-none"></div>
+
+                <!-- Slider Track -->
+                <div class="flex gap-6 animate-marquee">
+                    <!-- Set 1 (10 Items) -->
+                    <!-- ITEM --> <div class="w-[400px] p-8 rounded-3xl bg-white/5 border border-white/10 shrink-0"><i class="fa-solid fa-quote-left text-3xl text-amber-500/20 mb-4"></i><p class="text-gray-300 italic mb-6">"I never thought I could hit those high notes until I joined Recgetup Music. The techniques Najish Sir taught me changed my voice!"</p><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center font-bold text-black">R</div><div><h4 class="font-bold text-white text-sm">Rahul Verma</h4><p class="text-xs text-gray-500">Classical • 6 Months</p></div></div></div>
+                    <!-- 2 --> <div class="w-[400px] p-8 rounded-3xl bg-white/5 border border-white/10 shrink-0"><i class="fa-solid fa-quote-left text-3xl text-purple-500/20 mb-4"></i><p class="text-gray-300 italic mb-6">"The scheduling is so flexible. I can book my slots easily and the recording feature helps me analyze my mistakes."</p><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center font-bold text-white">P</div><div><h4 class="font-bold text-white text-sm">Priya Sharma</h4><p class="text-xs text-gray-500">Western Pop • 1 Year</p></div></div></div>
+                    <!-- 3 --> <div class="w-[400px] p-8 rounded-3xl bg-white/5 border border-white/10 shrink-0"><i class="fa-solid fa-quote-left text-3xl text-red-500/20 mb-4"></i><p class="text-gray-300 italic mb-6">"Singing Sufi requires soul, and this platform gave me the right mentorship to find my unique texture."</p><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center font-bold text-white">A</div><div><h4 class="font-bold text-white text-sm">Amit Patel</h4><p class="text-xs text-gray-500">Sufi • 3 Months</p></div></div></div>
+                    <!-- 4 --> <div class="w-[400px] p-8 rounded-3xl bg-white/5 border border-white/10 shrink-0"><i class="fa-solid fa-quote-left text-3xl text-blue-500/20 mb-4"></i><p class="text-gray-300 italic mb-6">"Started as a complete beginner, now I can confidently sing karaoke with friends. Highly recommended!"</p><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center font-bold text-white">S</div><div><h4 class="font-bold text-white text-sm">Sneha Gupta</h4><p class="text-xs text-gray-500">Beginner • 2 Months</p></div></div></div>
+                    <!-- 5 --> <div class="w-[400px] p-8 rounded-3xl bg-white/5 border border-white/10 shrink-0"><i class="fa-solid fa-quote-left text-3xl text-green-500/20 mb-4"></i><p class="text-gray-300 italic mb-6">"The breath control exercises are a game changer. My vocal stamina has improved drastically."</p><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center font-bold text-white">V</div><div><h4 class="font-bold text-white text-sm">Vikram Singh</h4><p class="text-xs text-gray-500">Voice Training • 4 Months</p></div></div></div>
+                    <!-- 6 --> <div class="w-[400px] p-8 rounded-3xl bg-white/5 border border-white/10 shrink-0"><i class="fa-solid fa-quote-left text-3xl text-pink-500/20 mb-4"></i><p class="text-gray-300 italic mb-6">"My daughter loves the kids batch! It's fun, interactive, and she is actually learning real music theory."</p><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-pink-500 flex items-center justify-center font-bold text-white">M</div><div><h4 class="font-bold text-white text-sm">Meera Reddy</h4><p class="text-xs text-gray-500">Kids Batch • 8 Months</p></div></div></div>
+                    <!-- 7 --> <div class="w-[400px] p-8 rounded-3xl bg-white/5 border border-white/10 shrink-0"><i class="fa-solid fa-quote-left text-3xl text-yellow-500/20 mb-4"></i><p class="text-gray-300 italic mb-6">"I am preparing for reality shows, and the mock auditions here have boosted my confidence level up."</p><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-yellow-500 flex items-center justify-center font-bold text-black">A</div><div><h4 class="font-bold text-white text-sm">Arjun Kapoor</h4><p class="text-xs text-gray-500">Advanced • 1.5 Years</p></div></div></div>
+                    <!-- 8 --> <div class="w-[400px] p-8 rounded-3xl bg-white/5 border border-white/10 shrink-0"><i class="fa-solid fa-quote-left text-3xl text-cyan-500/20 mb-4"></i><p class="text-gray-300 italic mb-6">"From bathroom singer to performing on stage at my college fest. Thank you Recgetup!"</p><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-cyan-500 flex items-center justify-center font-bold text-black">K</div><div><h4 class="font-bold text-white text-sm">Kavita Roy</h4><p class="text-xs text-gray-500">Hobbyist • 5 Months</p></div></div></div>
+                    <!-- 9 --> <div class="w-[400px] p-8 rounded-3xl bg-white/5 border border-white/10 shrink-0"><i class="fa-solid fa-quote-left text-3xl text-indigo-500/20 mb-4"></i><p class="text-gray-300 italic mb-6">"The premium subscription is worth every penny. Unlimited access to masterclasses is amazing."</p><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-white">R</div><div><h4 class="font-bold text-white text-sm">Rohan Das</h4><p class="text-xs text-gray-500">Pro Plan • 1 Year</p></div></div></div>
+                    <!-- 10 --> <div class="w-[400px] p-8 rounded-3xl bg-white/5 border border-white/10 shrink-0"><i class="fa-solid fa-quote-left text-3xl text-teal-500/20 mb-4"></i><p class="text-gray-300 italic mb-6">"Even attending classes online feels like being in a real studio. The audio quality and platform is top notch."</p><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-teal-500 flex items-center justify-center font-bold text-white">A</div><div><h4 class="font-bold text-white text-sm">Anjali Mehta</h4><p class="text-xs text-gray-500">Online • 9 Months</p></div></div></div>
+
+                    <!-- DUPLICATE SET FOR INFINITE LOOP -->
+                    <!-- ITEM --> <div class="w-[400px] p-8 rounded-3xl bg-white/5 border border-white/10 shrink-0"><i class="fa-solid fa-quote-left text-3xl text-amber-500/20 mb-4"></i><p class="text-gray-300 italic mb-6">"I never thought I could hit those high notes until I joined Recgetup Music. The techniques Najish Sir taught me changed my voice!"</p><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center font-bold text-black">R</div><div><h4 class="font-bold text-white text-sm">Rahul Verma</h4><p class="text-xs text-gray-500">Classical • 6 Months</p></div></div></div>
+                    <!-- 2 --> <div class="w-[400px] p-8 rounded-3xl bg-white/5 border border-white/10 shrink-0"><i class="fa-solid fa-quote-left text-3xl text-purple-500/20 mb-4"></i><p class="text-gray-300 italic mb-6">"The scheduling is so flexible. I can book my slots easily and the recording feature helps me analyze my mistakes."</p><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center font-bold text-white">P</div><div><h4 class="font-bold text-white text-sm">Priya Sharma</h4><p class="text-xs text-gray-500">Western Pop • 1 Year</p></div></div></div>
+                    <!-- 3 --> <div class="w-[400px] p-8 rounded-3xl bg-white/5 border border-white/10 shrink-0"><i class="fa-solid fa-quote-left text-3xl text-red-500/20 mb-4"></i><p class="text-gray-300 italic mb-6">"Singing Sufi requires soul, and this platform gave me the right mentorship to find my unique texture."</p><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center font-bold text-white">A</div><div><h4 class="font-bold text-white text-sm">Amit Patel</h4><p class="text-xs text-gray-500">Sufi • 3 Months</p></div></div></div>
+                    <!-- 4 --> <div class="w-[400px] p-8 rounded-3xl bg-white/5 border border-white/10 shrink-0"><i class="fa-solid fa-quote-left text-3xl text-blue-500/20 mb-4"></i><p class="text-gray-300 italic mb-6">"Started as a complete beginner, now I can confidently sing karaoke with friends. Highly recommended!"</p><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center font-bold text-white">S</div><div><h4 class="font-bold text-white text-sm">Sneha Gupta</h4><p class="text-xs text-gray-500">Beginner • 2 Months</p></div></div></div>
+                    <!-- 5 --> <div class="w-[400px] p-8 rounded-3xl bg-white/5 border border-white/10 shrink-0"><i class="fa-solid fa-quote-left text-3xl text-green-500/20 mb-4"></i><p class="text-gray-300 italic mb-6">"The breath control exercises are a game changer. My vocal stamina has improved drastically."</p><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center font-bold text-white">V</div><div><h4 class="font-bold text-white text-sm">Vikram Singh</h4><p class="text-xs text-gray-500">Voice Training • 4 Months</p></div></div></div>
+                    <!-- 6 --> <div class="w-[400px] p-8 rounded-3xl bg-white/5 border border-white/10 shrink-0"><i class="fa-solid fa-quote-left text-3xl text-pink-500/20 mb-4"></i><p class="text-gray-300 italic mb-6">"My daughter loves the kids batch! It's fun, interactive, and she is actually learning real music theory."</p><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-pink-500 flex items-center justify-center font-bold text-white">M</div><div><h4 class="font-bold text-white text-sm">Meera Reddy</h4><p class="text-xs text-gray-500">Kids Batch • 8 Months</p></div></div></div>
+                    <!-- 7 --> <div class="w-[400px] p-8 rounded-3xl bg-white/5 border border-white/10 shrink-0"><i class="fa-solid fa-quote-left text-3xl text-yellow-500/20 mb-4"></i><p class="text-gray-300 italic mb-6">"I am preparing for reality shows, and the mock auditions here have boosted my confidence level up."</p><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-yellow-500 flex items-center justify-center font-bold text-black">A</div><div><h4 class="font-bold text-white text-sm">Arjun Kapoor</h4><p class="text-xs text-gray-500">Advanced • 1.5 Years</p></div></div></div>
+                    <!-- 8 --> <div class="w-[400px] p-8 rounded-3xl bg-white/5 border border-white/10 shrink-0"><i class="fa-solid fa-quote-left text-3xl text-cyan-500/20 mb-4"></i><p class="text-gray-300 italic mb-6">"From bathroom singer to performing on stage at my college fest. Thank you Recgetup!"</p><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-cyan-500 flex items-center justify-center font-bold text-black">K</div><div><h4 class="font-bold text-white text-sm">Kavita Roy</h4><p class="text-xs text-gray-500">Hobbyist • 5 Months</p></div></div></div>
+                    <!-- 9 --> <div class="w-[400px] p-8 rounded-3xl bg-white/5 border border-white/10 shrink-0"><i class="fa-solid fa-quote-left text-3xl text-indigo-500/20 mb-4"></i><p class="text-gray-300 italic mb-6">"The premium subscription is worth every penny. Unlimited access to masterclasses is amazing."</p><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-white">R</div><div><h4 class="font-bold text-white text-sm">Rohan Das</h4><p class="text-xs text-gray-500">Pro Plan • 1 Year</p></div></div></div>
+                    <!-- 10 --> <div class="w-[400px] p-8 rounded-3xl bg-white/5 border border-white/10 shrink-0"><i class="fa-solid fa-quote-left text-3xl text-teal-500/20 mb-4"></i><p class="text-gray-300 italic mb-6">"Even attending classes online feels like being in a real studio. The audio quality and platform is top notch."</p><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-teal-500 flex items-center justify-center font-bold text-white">A</div><div><h4 class="font-bold text-white text-sm">Anjali Mehta</h4><p class="text-xs text-gray-500">Online • 9 Months</p></div></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. PRICING TEASER (Redesigned) -->
+        <div class="py-24 relative">
+            <div class="max-w-5xl mx-auto px-6">
+                <div class="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-[3rem] p-12 overflow-hidden text-center group hover:border-amber-500/30 transition-all duration-500">
+                    
+                    <!-- Decorative Gradients -->
+                    <!-- Decorative Gradients -->
+                    <div class="absolute top-0 right-0 w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] -mr-20 -mt-20"></div>
+                    <div class="absolute bottom-0 left-0 w-96 h-96 bg-amber-600/10 rounded-full blur-[100px] -ml-20 -mb-20"></div>
+
+                    <h2 class="text-4xl md:text-5xl font-black text-white mb-6 relative z-10">
+                        Invest in Your <span class="bg-gradient-to-r from-amber-400 to-orange-500 text-transparent bg-clip-text">Voice.</span>
+                    </h2>
+                    <p class="text-gray-300 text-lg mb-10 max-w-2xl mx-auto relative z-10 leading-relaxed">
+                        Start with a free trial or choose a premium plan to unlock advanced masterclasses, 1-on-1 mentorship, and exclusive studio resources.
+                    </p>
+
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
+                        <a href="{% url 'packages' %}" class="px-10 py-4 rounded-full bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold text-lg hover:shadow-lg hover:shadow-amber-500/25 hover:scale-105 transition transform">
+                            View All Plans
+                        </a>
+                        <a href="{% url 'register' %}" class="px-10 py-4 rounded-full bg-white/10 text-white border border-white/20 font-bold text-lg hover:bg-white/20 hover:scale-105 transition transform">
+                            Start Free Trial
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. FAQ SECTION -->
+        <div class="py-24 max-w-3xl mx-auto px-6">
+            <h2 class="text-3xl font-black text-white mb-10 text-center">Frequently Asked Questions</h2>
+            
+            <div class="space-y-4">
+                <details class="group bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+                    <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition">
+                        <h3 class="font-bold text-white">Do I need a professional microphone?</h3>
+                        <span class="text-amber-400 group-open:rotate-180 transition transform"><i class="fa-solid fa-chevron-down"></i></span>
+                    </summary>
+                    <div class="p-6 pt-0 text-gray-400 leading-relaxed">
+                        Not at all! You can start with your phone or laptop microphone. As you advance, we can recommend affordable gear.
+                    </div>
+                </details>
+
+                <details class="group bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+                    <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition">
+                        <h3 class="font-bold text-white">Can I reschedule a missed class?</h3>
+                        <span class="text-amber-400 group-open:rotate-180 transition transform"><i class="fa-solid fa-chevron-down"></i></span>
+                    </summary>
+                    <div class="p-6 pt-0 text-gray-400 leading-relaxed">
+                        Yes! All live classes are recorded and added to your dashboard. You can also join parallel batches if you miss your slot.
+                    </div>
+                </details>
+
+                <details class="group bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+                    <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition">
+                        <h3 class="font-bold text-white">Is this suitable for absolute beginners?</h3>
+                        <span class="text-amber-400 group-open:rotate-180 transition transform"><i class="fa-solid fa-chevron-down"></i></span>
+                    </summary>
+                    <div class="p-6 pt-0 text-gray-400 leading-relaxed">
+                        Absolutely. 80% of our students start with zero experience. Our "Vocal Basics" module is designed just for you.
+                    </div>
+                </details>
+            </div>
+        </div>
+
+        <!-- 8. FINAL CTA -->
+        <div class="py-24 text-center">
+            <div class="max-w-4xl mx-auto px-6">
+                <div class="bg-gradient-to-r from-purple-900 to-indigo-900 border border-white/10 rounded-3xl p-12 relative overflow-hidden">
+                    <!-- Glow -->
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-amber-500/20 rounded-full blur-3xl -mr-20 -mt-20"></div>
+
+                    <h2 class="text-3xl md:text-5xl font-black text-white mb-6 relative z-10">Ready to start your vocal journey?</h2>
+                    <p class="text-purple-200 mb-8 relative z-10">Join thousands of singers today.</p>
+                    
+                    <a href="{% url 'register' %}" class="relative z-10 inline-block px-10 py-4 bg-white text-purple-900 font-black text-xl rounded-full hover:bg-gray-100 transition shadow-xl hover:scale-105">
+                        Join for Free Now 🎤
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+{% endif %}
+
+    <!-- AUTOMATED ANIMATIONS & INTERACTIVITY -->
+    <style>
+        /* 1. Scroll Reveal Animation */
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1); /* Smooth elegant ease */
+        }
+        .reveal-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 2. Shimmer Text Effect */
+        .animate-shimmer {
+            background-size: 200% auto;
+            animation: shimmerGradient 4s linear infinite;
+        }
+        @keyframes shimmerGradient {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        /* 3. Floating Animation */
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        /* 4. Glass Hover Glow */
+        .hover-glow-card {
+            transition: all 0.5s ease;
+        }
+        .hover-glow-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px -10px rgba(124, 58, 237, 0.3); /* Purple Glow */
+            border-color: rgba(167, 139, 250, 0.5);
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // A. SCROLL REVEAL OBSERVER
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: "0px"
+            };
+
+            const revealObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        // Optional: Stop observing once revealed
+                        // revealObserver.unobserve(entry.target); 
+                    }
+                });
+            }, observerOptions);
+
+            const revealElements = document.querySelectorAll('.reveal-on-scroll');
+            revealElements.forEach(el => revealObserver.observe(el));
+
+            // B. NUMBER COUNTER ANIMATION
+            const counterObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const target = parseInt(entry.target.getAttribute('data-target'));
+                        const duration = 2000; // 2 seconds
+                        const stepTime = 20;
+                        const steps = duration / stepTime;
+                        const increment = target / steps;
+                        let current = 0;
+
+                        const timer = setInterval(() => {
+                            current += increment;
+                            if (current >= target) {
+                                entry.target.innerText = target.toLocaleString() + "+";
+                                clearInterval(timer);
+                            } else {
+                                entry.target.innerText = Math.floor(current).toLocaleString() + "+";
+                            }
+                        }, stepTime);
+                        
+                        counterObserver.unobserve(entry.target);
+                    }
+                });
+            });
+
+            const counters = document.querySelectorAll('.count-up');
+            counters.forEach(counter => counterObserver.observe(counter));
+        });
+    </script>
+{% endblock %}

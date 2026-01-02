@@ -1,0 +1,56 @@
+{% extends 'quizzes/base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto text-center">
+    
+    <div class="mb-12">
+        <h2 class="text-3xl md:text-5xl font-black text-white mb-4">Membership Plans</h2>
+        <p class="text-gray-400">Select a package to start your training.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+        {% for pkg in packages %}
+        <div class="relative bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition duration-300 group flex flex-col h-full">
+            <!-- Glow Effect -->
+            <div class="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-0 group-hover:opacity-100 transition duration-500"></div>
+            
+            <h3 class="text-2xl font-bold text-white mb-2">{{ pkg.name }}</h3>
+            <div class="flex items-baseline justify-center gap-1 my-6">
+                <span class="text-4xl font-black text-amber-400">₹{{ pkg.price|intcomma }}</span>
+                <span class="text-gray-500">/ {{ pkg.duration_months }} mo</span>
+            </div>
+            
+            <ul class="text-left space-y-4 mb-8 flex-grow">
+                <li class="flex items-center gap-3 text-gray-300">
+                    <i class="fa-solid fa-check text-green-400"></i>
+                    <span>{{ pkg.max_classes }} Live Classes</span>
+                </li>
+                <li class="flex items-center gap-3 text-gray-300">
+                    <i class="fa-solid fa-check text-green-400"></i>
+                    <span>Review Recordings</span>
+                </li>
+                 <li class="flex items-center gap-3 text-gray-300">
+                    <i class="fa-solid fa-check text-green-400"></i>
+                    <span>Practice Materials</span>
+                </li>
+                {% if pkg.description %}
+                <li class="flex items-start gap-3 text-gray-400 text-sm italic pt-2 border-t border-white/10">
+                    <i class="fa-solid fa-info-circle mt-1"></i>
+                    <span>{{ pkg.description }}</span>
+                </li>
+                {% endif %}
+            </ul>
+
+            <a href="{% url 'payment_initiate' pkg.id %}" class="w-full block py-4 rounded-xl bg-white text-black font-black text-lg hover:bg-amber-400 hover:scale-105 transition transform shadow-xl">
+                Choose Plan
+            </a>
+        </div>
+        {% empty %}
+        <div class="col-span-3 text-center py-10">
+            <p class="text-gray-500">No packages available right now.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

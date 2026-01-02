@@ -1,0 +1,78 @@
+{% extends 'quizzes/base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white/5 border border-white/10 rounded-3xl p-8 md:p-12 text-center relative overflow-hidden">
+        
+        <!-- BG Glow -->
+        <div class="absolute top-0 right-0 w-64 h-64 bg-green-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+
+        <h2 class="text-3xl font-black text-white mb-6">Checkout Summary</h2>
+        
+        <div class="bg-black/20 rounded-xl p-6 mb-8 border border-white/5 text-left">
+            <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-4">
+                <div>
+                    <span class="block text-gray-400 text-xs uppercase tracking-wider">Item</span>
+                    <span class="text-white font-bold text-lg">{{ package.name }}</span>
+                </div>
+                <div class="text-right">
+                    <span class="block text-gray-400 text-xs uppercase tracking-wider">Price</span>
+                    <span class="text-white font-bold text-lg">₹{{ package.price|intcomma }}</span>
+                </div>
+            </div>
+            
+            <div class="flex justify-between items-center text-sm text-gray-400 mb-6">
+                <span>Duration</span>
+                <span>{{ package.duration_months }} Months</span>
+            </div>
+
+            <div class="flex justify-between items-center pt-2">
+                <span class="text-gray-300 font-bold text-xl">Total To Pay</span>
+                <span class="text-4xl font-black text-amber-500">₹{{ package.price|intcomma }}</span>
+            </div>
+        </div>
+
+        <!-- RAZORPAY CHECKOUT FORM -->
+        <!-- RAZORPAY CHECKOUT FORM -->
+        <button id="rzp-button1" class="w-full py-4 rounded-xl bg-purple-600 text-white font-bold text-lg hover:bg-purple-500 transition shadow-lg shadow-purple-900/40">
+            Complete Payment
+        </button>
+        <div class="mt-4 flex justify-center gap-4 text-xs text-gray-500">
+            <span class="flex items-center gap-1"><i class="fa-solid fa-bolt text-amber-500"></i> Instant Activation</span>
+            <span class="flex items-center gap-1"><i class="fa-solid fa-shield-halved"></i> Secure Payment</span>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+var options = {
+    "key": "{{ razorpay_key_id }}", // Enter the Key ID generated from the Dashboard
+    "amount": "{{ order.amount }}", // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+    "currency": "{{ order.currency }}",
+    "name": "Recgetup Music Singing Classes",
+    "description": "Subscription for {{ package.name }}",
+    "image": "https://example.com/your_logo", // You can customize this
+    "order_id": "{{ order.id }}", //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+    "callback_url": "{{ callback_url }}",
+    "prefill": {
+        "name": "{{ user.first_name }} {{ user.last_name }}",
+        "email": "{{ user.email }}",
+        "contact": "{{ user.profile.phone_number }}"
+    },
+    "notes": {
+        "address": "Recgetup Music Official"
+    },
+    "theme": {
+        "color": "#7c3aed" // Purple-600 matches your theme
+    }
+};
+var rzp1 = new Razorpay(options);
+document.getElementById('rzp-button1').onclick = function(e){
+    rzp1.open();
+    e.preventDefault();
+}
+</script>
+{% endblock %}

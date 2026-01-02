@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Reset & Basics */
+        body, p, h1, h2, h3, a, table, td { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; }
+        body { background-color: #0d1117; color: #e5e7eb; width: 100% !important; -webkit-text-size-adjust: 100%; }
+        
+        /* Container */
+        .email-wrapper { width: 100%; background-color: #0d1117; padding: 20px 0; }
+        .email-container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background-color: #161b22; 
+            border: 1px solid #30363d; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+
+        /* Header */
+        .header { 
+            background-color: #161b22; 
+            padding: 24px 20px; 
+            text-align: center; 
+            border-bottom: 1px solid #30363d;
+        }
+        .logo-text { 
+            font-size: 26px; 
+            font-weight: 800; 
+            color: #ffffff; 
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+        .logo-icon { color: #d97706; }
+
+        /* Content */
+        .content { padding: 32px 24px; line-height: 1.6; color: #d1d5db; }
+        h1, h2 { color: #ffffff; margin-bottom: 20px; text-align: center; font-size: 24px; }
+        p { margin-bottom: 16px; color: #b7bcc4; font-size: 16px; }
+        strong { color: #ffffff; }
+
+        /* Button */
+        .btn-container { text-align: center; margin: 30px 0; }
+        .btn { 
+            display: inline-block; 
+            background-color: #7c3aed; /* Purple 600 */
+            color: #ffffff !important; 
+            padding: 14px 30px; 
+            text-decoration: none; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            font-size: 16px;
+            border: 1px solid #6d28d9;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .btn:hover { background-color: #6d28d9; }
+
+        /* Receipt Table */
+        .receipt-table { 
+            width: 100%; 
+            background-color: #0d1117; 
+            border: 1px solid #30363d; 
+            border-radius: 8px; 
+            border-collapse: collapse;
+            margin: 25px 0;
+        }
+        .receipt-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #30363d;
+            font-size: 15px;
+        }
+        .receipt-table tr:last-child td { border-bottom: none; }
+        
+        .label { 
+            color: #8b949e; 
+            font-size: 13px;
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+            width: 40%;
+            text-align: left;
+            vertical-align: middle;
+        }
+        .value { 
+            color: #ffffff; 
+            font-weight: bold; 
+            text-align: right;
+            width: 60%;
+            vertical-align: middle;
+        }
+        .highlight-value { color: #fbbf24; font-size: 18px; }
+
+        /* Footer */
+        .footer { 
+            background-color: #0d1117; 
+            padding: 24px 20px; 
+            text-align: center; 
+            border-top: 1px solid #30363d;
+            font-size: 12px; 
+            color: #6b7280; 
+        }
+        .footer a { color: #fbbf24; text-decoration: none; }
+
+        /* --- MOBILE RESPONSIVE --- */
+        @media only screen and (max-width: 480px) {
+            .email-wrapper { padding: 0 !important; }
+            .email-container { 
+                width: 100% !important; 
+                border-radius: 0 !important; 
+                border: none !important;
+                border-bottom: 1px solid #30363d !important;
+            }
+            .content { padding: 24px 16px !important; }
+            .header { padding: 20px 16px !important; }
+            h1 { font-size: 22px !important; }
+            p { font-size: 15px !important; }
+            
+            .btn { 
+                display: block !important; 
+                width: 100% !important; 
+                box-sizing: border-box !important;
+                text-align: center !important;
+                padding: 14px 0 !important;
+            }
+
+            .label { font-size: 12px !important; }
+            .value { font-size: 14px !important; }
+            .highlight-value { font-size: 16px !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-wrapper">
+        <center>
+            <div class="email-container">
+                <!-- Header -->
+                <div class="header">
+                    <div class="logo-text">
+                        <span class="logo-icon">🎤</span> Recgetup Music
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="content">
+                    {% block body %}{% endblock %}
+                </div>
+
+                <!-- Footer -->
+                <div class="footer">
+                    <p>&copy; 2025 Md Najish Khan | All Rights Reserved</p>
+                    <p>
+                        <a href="https://mdnajishkhan.github.io/my-portfolio/">Portfolio</a> • 
+                        <a href="https://www.linkedin.com/in/najish-pythondev">LinkedIn</a>
+                    </p>
+                    <p style="margin-top: 10px; opacity: 0.5;">This email was sent to members of Recgetup Music.</p>
+                </div>
+            </div>
+        </center>
+    </div>
+</body>
+</html>
